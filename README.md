@@ -1,9 +1,9 @@
 ### Authentication WebSite
 
 This project consists of a 
- frontend => (https://github.com/RobertFacundo/authF) 
+frontend => (https://github.com/RobertFacundo/authF) 
 &
- backend =>(https://github.com/RobertFacundo/authB) 
+backend =>(https://github.com/RobertFacundo/authB) 
 
 working together to provide a secure authentication solution. 
 
@@ -13,6 +13,7 @@ The frontend is deployed on Vercel and the backend on Render and the entire proj
 
 ## Deployment
 -Frontend: Deployed to Vercel via the web interface, communicates with the backend API.
+
 -Backend: Deployed to Render using the VSC CLI, handles authentication and data processing.
 
 ## Environment Variables
