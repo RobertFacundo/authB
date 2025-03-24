@@ -9,12 +9,14 @@ frontend => (https://github.com/RobertFacundo/authF)
 backend =>(https://github.com/RobertFacundo/authB) 
 
 working together to provide a secure authentication solution. 
+
 ---
 
 # Deployment
 -Frontend: Deployed to Vercel via the web interface, communicates with the backend API.
 
 -Backend: Deployed to Render using the VSC CLI, handles authentication and data processing.
+
 ---
 
 ### Backend
