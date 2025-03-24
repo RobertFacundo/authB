@@ -39,6 +39,17 @@ The TypeOrmModule package is used to manage the connection to the database. The 
 
 - If the DATABASE_URL is not found, individual variables like DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, and DB_DATABASE will be used to configure the connection.
 
+### User Module and Endpoints
+
+The User Module is responsible for handling user-related operations. It includes endpoints for creating a new user, retrieving a user profile by ID, and changing the password of an existing user.
+
+Endpoints:
+
+POST /user: Creates a new user with the provided details (first name, last name, email, and password).
+
+GET /user/:id: Retrieves the user profile by ID.
+
+PUT /user/:id/password: Changes the password of a user by ID.
 
 ----
 Created by Robert Facundo
