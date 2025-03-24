@@ -11,18 +11,33 @@ import { AppService } from './app.service';
       envFilePath: process.env.NODE_ENV === 'production' ? '.env.production' : '.env',
     }),
     TypeOrmModule.forRootAsync({
-      useFactory: async (ConfigService: ConfigService) => ({
-        type: 'postgres',
-        host: ConfigService.get<string>('DB_HOST'),
-        port: ConfigService.get<number>('DB_PORT'),
-        username: ConfigService.get<string>('DB_USERNAME'),
-        password: ConfigService.get<string>('DB_PASSWORD'),
-        database: ConfigService.get<string>('DB_DATABASE'),
-        entities: [],
-        logging: process.env.NODE_ENV !== 'production', 
-        synchronize: process.env.NODE_ENV !== 'production',
-      }),
-      inject:[ConfigService]
+      useFactory: async (ConfigService: ConfigService) => {
+        const dbUrl = ConfigService.get<string>('DATABASE_URL');
+        if (dbUrl) {
+          // Usar DATABASE_URL en producción
+          return {
+            type: 'postgres',
+            url: dbUrl,
+            entities: [],
+            logging: process.env.NODE_ENV !== 'production',
+            synchronize: process.env.NODE_ENV !== 'production',
+          };
+        } else {
+          // Usar la configuración separada para desarrollo
+          return {
+            type: 'postgres',
+            host: ConfigService.get<string>('DB_HOST'),
+            port: ConfigService.get<number>('DB_PORT'),
+            username: ConfigService.get<string>('DB_USERNAME'),
+            password: ConfigService.get<string>('DB_PASSWORD'),
+            database: ConfigService.get<string>('DB_DATABASE'),
+            entities: [],
+            logging: process.env.NODE_ENV !== 'production',
+            synchronize: process.env.NODE_ENV !== 'production',
+          };
+        }
+      },
+      inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([])
   ],
