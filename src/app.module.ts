@@ -19,7 +19,7 @@ import { User } from './user/user.entity';
           return {
             type: 'postgres',
             url: dbUrl,
-            entities: [],
+            entities: [User],
             logging: process.env.NODE_ENV !== 'production',
             synchronize: process.env.NODE_ENV !== 'production',
           };
