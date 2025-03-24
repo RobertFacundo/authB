@@ -32,10 +32,27 @@ export class UserService {
         return this.userRepository.findOne({ where: { id } })
     }
 
+    async getUserByEmail(email: string): Promise<User | null> {
+        return this.userRepository.findOne({ where: { email } })
+    }
+
     async changePassword(id: number, newPassword: string): Promise<User> {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) throw new Error('User not found');
         user.password = await bcrypt.hash(newPassword, 10);
         return this.userRepository.save(user)
     }
+
+    async updateUser(user: User): Promise<User> {
+        const existingUser = await this.userRepository.findOne({ where: { id: user.id } });
+        if (!existingUser) throw new Error('User not found');
+        
+        // Actualizar solo los campos proporcionados (se puede ampliar según las necesidades)
+        existingUser.firstName = user.firstName || existingUser.firstName;
+        existingUser.lastName = user.lastName || existingUser.lastName;
+        existingUser.email = user.email || existingUser.email;
+        existingUser.isActive = user.isActive !== undefined ? user.isActive : existingUser.isActive;
+    
+        return this.userRepository.save(existingUser);
+      }
 }

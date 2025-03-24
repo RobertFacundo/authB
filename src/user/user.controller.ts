@@ -24,4 +24,6 @@ export class UserController {
     ) {
         return this.userService.changePassword(id, body.newPassword);
     }
+
+    
 }
