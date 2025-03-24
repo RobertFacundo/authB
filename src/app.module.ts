@@ -14,7 +14,6 @@ import { AppService } from './app.service';
       useFactory: async (ConfigService: ConfigService) => {
         const dbUrl = ConfigService.get<string>('DATABASE_URL');
         if (dbUrl) {
-          // Usar DATABASE_URL en producción
           return {
             type: 'postgres',
             url: dbUrl,
@@ -23,7 +22,6 @@ import { AppService } from './app.service';
             synchronize: process.env.NODE_ENV !== 'production',
           };
         } else {
-          // Usar la configuración separada para desarrollo
           return {
             type: 'postgres',
             host: ConfigService.get<string>('DB_HOST'),

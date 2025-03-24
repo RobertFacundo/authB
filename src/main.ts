@@ -10,9 +10,9 @@ async function bootstrap() {
   await app.listen(port);
 
   if (process.env.NODE_ENV === 'production') {
-    console.log('Application is running in ... production environment');
+    console.log('Application is running in... production environment');
   } else {
-    console.log('Application is running in ...development environment');
+    console.log('Application is running in... development environment');
   }
 }
 bootstrap();
