@@ -1,6 +1,7 @@
-import { Controller, Post, Body, Param, Put, Get } from '@nestjs/common';
+import { Controller, Post, Body, Param, Put, Get, Res, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -52,8 +53,21 @@ export class AuthController {
         }
     }
 
-    // @Post('oauth')
-    // async ouauthLogin(@Body() body: {provider: string, accesToken: string}){
-    //     return this.authService.ouauthLogin(body.provider, body.accesToken)
-    // }
+    @Get('github')
+    async gitHubLogin(@Res() res: Response) {
+        const url = this.authService.getGitHubUrl();
+        return res.redirect(url);
+    }
+
+    @Get('github/callback')
+    async gitHubCallback(@Query('code') code: string, @Res() res: Response) {
+        try {
+            const token = await this.authService.githubLogin(code);
+            return res.json({ message: 'Authentication successful', token });
+        } catch (error) {
+            console.error(error);
+            return res.status(400).json({ message: 'Authentication failed', error: error.message });
+        }
+    }
+
 }

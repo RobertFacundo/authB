@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { ConfigService } from '@nestjs/config';
 import { MailService } from 'src/mail/mail.service';
+import axios from 'axios';
 
 @Injectable()
 export class AuthService {
@@ -45,27 +46,22 @@ export class AuthService {
 
     async verifyEmail(token: string): Promise<any> {
         try {
-            // Verificar el token JWT
             const decoded = await this.jwtService.verifyAsync(token, {
                 secret: process.env.JWT_SECRET_KEY,
             });
 
-            // Asegurarse de que el token contiene un email válido
             if (!decoded || !decoded.email) {
                 throw new Error('Invalid token');
             }
 
-            // Buscar al usuario por su email
             const user = await this.userService.getUserByEmail(decoded.email);
             if (!user) {
                 throw new Error('User not found');
             }
 
-            // Marcar al usuario como verificado
             user.isActive = true;
             await this.userService.updateUser(user);
 
-            // Respuesta de éxito
             return { message: 'Email verified successfully!', success: true };
         } catch (error) {
             console.error('Error during email verification:', error);
@@ -107,7 +103,69 @@ export class AuthService {
         return { message: 'Password has been successfully updated' }
     }
 
-    // async oauthLogin(provider: string, access_token: string): Promise<any>{
+    getGitHubUrl(): string {
+        const clientId = this.configService.get<string>('GITHUB_CLIENT_ID');
+        const redirectedUrl = this.configService.get<string>('GITHUB_CALLBACK_URL');
 
-    // }
+        return `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectedUrl}&scope=user:email`;
+    }
+
+    async githubLogin(code: string): Promise<string> {
+        const clientId = this.configService.get<string>('GITHUB_CLIENT_ID');
+        const clientSecret = this.configService.get<string>('GITHUB_CLIENT_SECRET');
+    
+        try {
+            console.log('Attempting to exchange code for access token');
+            const tokenResponse = await axios.post(
+                'https://github.com/login/oauth/access_token',
+                {
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                    code,
+                },
+                { headers: { Accept: 'application/json' } },
+            );
+    
+            const accessToken = tokenResponse.data.access_token;
+            if (!accessToken) throw new Error('GitHub authentication Failed');
+    
+            const userResponse = await axios.get('https://api.github.com/user', {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+    
+            const userEmailResponse = await axios.get('https://api.github.com/user/emails', {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            });
+    
+            interface GitHubEmail {
+                email: string;
+                primary: boolean;
+                verified: boolean;
+                visibility: string | null;
+            }
+    
+            const userEmails: GitHubEmail[] = userEmailResponse.data;
+            const userEmail = userEmails.find((email) => email.primary)?.email;
+    
+            if (!userEmail) {
+                throw new Error('GitHub user does not have a primary email');
+            }
+    
+            console.log(`User email: ${userEmail}, checking if user exists in the database`);
+            let user = await this.userService.getUserByEmail(userEmail);
+    
+            if (!user) {
+                console.log('User not found, creating new user');
+                user = await this.userService.createUser(userResponse.data.name, '', userEmail, '', true);
+            }
+    
+            const payload = { sub: user.id, email: user.email };
+            console.log('Generating JWT for the user');
+            return this.jwtService.sign(payload, { secret: this.configService.get<string>('JWT_SECRET_KEY') });
+    
+        } catch (error) {
+            console.error('Error during GitHub login:', error.message);
+            throw new Error('GitHub login failed: ' + error.message);
+        }
+    }
 }
