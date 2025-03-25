@@ -22,7 +22,7 @@ export class AuthService {
 
         const user = await this.userService.createUser(firstName, lastName, email, password);
 
-        // await this.mailService.sendVerificationEmail(user.email);
+        await this.mailService.sendVerificationEmail(user.email);
 
         return { message: 'User registered successfully. Please check your email for verification.' };
     }
@@ -45,31 +45,30 @@ export class AuthService {
 
     async verifyEmail(token: string): Promise<any> {
         try {
-            // Verifica el token JWT
-            const user = await this.jwtService.verifyAsync(token, {
+            // Verificar el token JWT
+            const decoded = await this.jwtService.verifyAsync(token, {
                 secret: process.env.JWT_SECRET_KEY,
             });
 
-            if (!user) {
+            // Asegurarse de que el token contiene un email válido
+            if (!decoded || !decoded.email) {
                 throw new Error('Invalid token');
             }
 
-            // Busca al usuario en la base de datos
-            const foundUser = await this.userService.getUserProfile(user.sub);
-
-            if (!foundUser) {
+            // Buscar al usuario por su email
+            const user = await this.userService.getUserByEmail(decoded.email);
+            if (!user) {
                 throw new Error('User not found');
             }
 
-            // Marca al usuario como activo
-            foundUser.isActive = true;
-            await this.userService.updateUser(foundUser);
+            // Marcar al usuario como verificado
+            user.isActive = true;
+            await this.userService.updateUser(user);
 
-            return { message: 'Email verified successfully' };
-
+            // Respuesta de éxito
+            return { message: 'Email verified successfully!', success: true };
         } catch (error) {
-            // Lanza el error con un mensaje más específico
-            console.error('Error during email verification:', error); // Log para depuración
+            console.error('Error during email verification:', error);
             throw new Error(`Failed to verify email: ${error.message}`);
         }
     }
@@ -87,7 +86,7 @@ export class AuthService {
                 expiresIn: '1h'
             }
         );
-        // await this.mailService.sendPasswordResetEmail(user.email, token);
+        await this.mailService.sendPasswordResetEmail(user.email, token);
 
         return { message: 'Password reset link has been sent to your email.', token: token }
     }

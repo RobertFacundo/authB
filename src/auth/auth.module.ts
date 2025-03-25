@@ -6,6 +6,7 @@ import { MailService } from 'src/mail/mail.service';
 import { JwtStrategy } from './jwt.strategy';
 import { UserModule } from 'src/user/user.module';
 import { ConfigService } from '@nestjs/config';
+import { UserService } from 'src/user/user.service';
 
 @Module({
   imports: [

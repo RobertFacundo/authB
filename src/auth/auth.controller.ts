@@ -1,9 +1,10 @@
-import { Controller, Post, Body, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, Param, Put, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+    constructor(private readonly authService: AuthService, private readonly jwtService: JwtService) { }
 
     @Post('register')
     async register(
@@ -19,14 +20,19 @@ export class AuthController {
         return this.authService.login(body.email, body.password);
     }
 
-    @Post('verify-email')
-    async verifyEmail(@Body() body: { token: string }) {
-        return this.authService.verifyEmail(body.token);
+    @Get('verify-email/:token')
+    async verifyEmail(@Param('token') token: string): Promise<any> {
+        try {
+            const result = await this.authService.verifyEmail(token);
+            return { message: 'Your email has been successfully verified!', success: true };
+        } catch (error) {
+            return { message: 'There was an error verifying your email: ' + error.message, success: false }; // En caso de error
+        }
     }
 
     @Post('forgot-password')
     async forgotPassword(@Body() body: { email: string }) {
-      return this.authService.forgotPassword(body.email);
+        return this.authService.forgotPassword(body.email);
     }
 
     @Put('reset-password')
@@ -34,6 +40,16 @@ export class AuthController {
         @Body() body: { token: string, newPassword: string }
     ) {
         return this.authService.resetPassword(body.token, body.newPassword);
+    }
+
+    @Get('reset-password/:token')
+    async getResetPassword(@Param('token') token: string) {
+        try {
+            const decoded = await this.jwtService.verifyAsync(token);
+            return { message: 'Token is valid. Show reset password form.' };
+        } catch (error) {
+            throw new Error('Invalid or expired token');
+        }
     }
 
     // @Post('oauth')
