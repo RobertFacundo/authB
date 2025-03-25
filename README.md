@@ -43,13 +43,34 @@ The TypeOrmModule package is used to manage the connection to the database. The 
 
 The User Module is responsible for handling user-related operations. It includes endpoints for creating a new user, retrieving a user profile by ID, and changing the password of an existing user.
 
-Endpoints:
+- Endpoints:
 
 POST /user: Creates a new user with the provided details (first name, last name, email, and password).
 
 GET /user/:id: Retrieves the user profile by ID.
 
 PUT /user/:id/password: Changes the password of a user by ID.
+
+### Auth Module and Endpoints
+
+The Auth Module is responsible for handling all user authentication operations. It includes endpoints for registering a new user, logging in, verifying email, and resetting the password.
+
+- Endpoints:
+
+POST /auth/register
+Description: Creates a new user with the provided details (first name, last name, email, and password).
+
+POST /auth/login
+Description: Logs in the user with the provided email and password.
+
+POST /auth/verify-email
+Description: Verifies the user's email using the verification token sent to the user's email.
+
+POST /auth/forgot-password
+Description: Sends an email with a link to reset the password.
+
+PUT /auth/reset-password
+Description: Resets the user's password using a reset token and a new password.
 
 ----
 Created by Robert Facundo
