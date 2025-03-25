@@ -72,6 +72,23 @@ Description: Sends an email with a link to reset the password.
 PUT /auth/reset-password
 Description: Resets the user's password using a reset token and a new password.
 
+GET /auth/github
+Description: Redirects the user to GitHub's OAuth authorization page for login.
+
+GET /auth/github/callback
+Description: GitHub OAuth callback endpoint that exchanges the authorization code for an authentication token.
+
+- Email Notifications:
+
+When a new user registers, an email is sent to verify their email address. The verification email includes a token that the user must use to confirm their email.
+
+If a user forgets their password, a password reset email is sent with a link containing a token that can be used to reset their password.
+
+- Third-party Authentication (GitHub):
+
+The system supports authentication via GitHub, using OAuth for secure login. The user is redirected to GitHub’s OAuth page to grant permission, and once authenticated, the user is redirected back to the application with an authentication token.
+
+
 ----
 Created by Robert Facundo
 --
