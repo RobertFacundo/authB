@@ -21,7 +21,7 @@ export class MailService {
         });
 
         this.appBaseUrl = process.env.NODE_ENV === 'production'
-            ? 'https://authb.onrender.com/'
+            ? 'https://authf-yama.vercel.app/'
             : 'http://localhost:5173/';
     }
 
