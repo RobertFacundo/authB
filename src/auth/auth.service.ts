@@ -15,20 +15,77 @@ export class AuthService {
         private configService: ConfigService,
     ) { }
 
-    async register(firstName: string, lastName: string, email: string, password: string): Promise<any> {
-        const existingUser = await this.userService.getUserByEmail(email);
-        if (existingUser) {
-            throw new Error('User with this email already exists');
+    async verifyReCaptcha(token: string): Promise<boolean> {
+        const secretKey = this.configService.get<string>('RECAPTCHA_SECRET_KEY');
+        const url = `https://www.google.com/recaptcha/api/siteverify`;
+
+        try {
+            const response = await axios.post(url, null, {
+                params: {
+                    secret: secretKey,
+                    response: token,
+                },
+            });
+
+            if (response.data.success) {
+                return true;
+            } else {
+                console.error('reCaptcha verification failed:', response.data);
+                return false; 
+            }
+        } catch (error) {
+            console.error('Error during reCaptcha verification:', error);
+            return false;
         }
-
-        const user = await this.userService.createUser(firstName, lastName, email, password);
-
-        await this.mailService.sendVerificationEmail(user.email);
-
-        return { message: 'User registered successfully. Please check your email for verification.' };
     }
 
-    async login(email: string, password: string): Promise<any> {
+    async register(firstName: string, lastName: string, email: string, password: string, captchaToken: string): Promise<any> {
+        console.log(captchaToken, 'log antes de verificar')
+        
+        const isCaptchValid = await this.verifyReCaptcha(captchaToken);
+        if (!isCaptchValid) {
+            throw new Error('reCaptcha verification failed')
+        }
+
+        try {
+            const minLength = 8;
+            const maxLength = 20;
+
+            if (password.length < minLength || password.length > maxLength) {
+                throw new Error(`Password must be between ${minLength} and ${maxLength} characters.`);
+            }
+
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(password)) {
+                throw new Error('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.');
+            }
+
+            const existingUser = await this.userService.getUserByEmail(email);
+            if (existingUser) {
+                throw new Error('User with this email already exists');
+            }
+
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            const user = await this.userService.createUser(firstName, lastName, email, hashedPassword);
+
+            console.log('Sending verification email...');
+            await this.mailService.sendVerificationEmail(user.email);
+
+            return { message: 'User registered successfully. Please check your email for verification.' };
+
+        } catch (error) {
+            console.error('Error during registration:', error.message);
+            throw new Error(`Registration failed: ${error.message}`);
+        }
+    }
+
+    async login(email: string, password: string, captchaToken: string): Promise<any> {
+        const isCaptchaValid = await this.verifyReCaptcha(captchaToken);
+        if (!isCaptchaValid) {
+            throw new Error('reCaptcha verification failed')
+        }
+
         const user = await this.userService.getUserByEmail(email);
         if (!user || !(await bcrypt.compare(password, user.password))) {
             throw new Error('invalid credentials');
@@ -113,7 +170,7 @@ export class AuthService {
     async githubLogin(code: string): Promise<string> {
         const clientId = this.configService.get<string>('GITHUB_CLIENT_ID');
         const clientSecret = this.configService.get<string>('GITHUB_CLIENT_SECRET');
-    
+
         try {
             console.log('Attempting to exchange code for access token');
             const tokenResponse = await axios.post(
@@ -125,44 +182,44 @@ export class AuthService {
                 },
                 { headers: { Accept: 'application/json' } },
             );
-    
+
             const accessToken = tokenResponse.data.access_token;
             if (!accessToken) throw new Error('GitHub authentication Failed');
-    
+
             const userResponse = await axios.get('https://api.github.com/user', {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
-    
+
             const userEmailResponse = await axios.get('https://api.github.com/user/emails', {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
-    
+
             interface GitHubEmail {
                 email: string;
                 primary: boolean;
                 verified: boolean;
                 visibility: string | null;
             }
-    
+
             const userEmails: GitHubEmail[] = userEmailResponse.data;
             const userEmail = userEmails.find((email) => email.primary)?.email;
-    
+
             if (!userEmail) {
                 throw new Error('GitHub user does not have a primary email');
             }
-    
+
             console.log(`User email: ${userEmail}, checking if user exists in the database`);
             let user = await this.userService.getUserByEmail(userEmail);
-    
+
             if (!user) {
                 console.log('User not found, creating new user');
                 user = await this.userService.createUser(userResponse.data.name, '', userEmail, '', true);
             }
-    
+
             const payload = { sub: user.id, email: user.email };
             console.log('Generating JWT for the user');
             return this.jwtService.sign(payload, { secret: this.configService.get<string>('JWT_SECRET_KEY') });
-    
+
         } catch (error) {
             console.error('Error during GitHub login:', error.message);
             throw new Error('GitHub login failed: ' + error.message);

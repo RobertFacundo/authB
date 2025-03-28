@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { Transporter } from 'nodemailer';
 import * as nodemailer from 'nodemailer';
 import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class MailService {
-    private transporter;
+    private transporter: Transporter;
     private appBaseUrl: string;
 
     constructor() {
@@ -21,20 +22,25 @@ export class MailService {
 
         this.appBaseUrl = process.env.NODE_ENV === 'production'
             ? 'https://authb.onrender.com/'
-            : 'http://localhost:3000/';
+            : 'http://localhost:5173/';
     }
 
     async sendVerificationEmail(email: string): Promise<void> {
+        console.log('Generating verification token for email:', email);
         const verificationToken = this.generateVerificationToken(email);
+
+        console.log(verificationToken, 'log de mailservice sve')
 
         const mailOptions = {
             from: process.env.MAIL_USER,
             to: email,
             subject: 'Please verify your email address',
-            text: `Click here to verify your email: ${this.appBaseUrl}auth/verify-email/${verificationToken}`,
+            text: `Click here to verify your email: ${this.appBaseUrl}verify-email/${verificationToken}`,
         };
 
+        console.log('Sending email:', email);
         await this.transporter.sendMail(mailOptions)
+        console.log('Verification email sent:', email);
     }
 
     async sendPasswordResetEmail(email: string, token: string): Promise<void> {
