@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Put, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Put, Body, Query, HttpException, HttpStatus, ConflictException } from '@nestjs/common';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -25,5 +25,10 @@ export class UserController {
         return this.userService.changePassword(id, body.newPassword);
     }
 
-    
+    @Get('/check-user/:email')
+    async getUserByEmail(@Param('email') email: string) {
+        console.log('Received email:', email);
+        const user = await this.userService.getUserByEmail(email);
+        return !!user;  
+    }
 }

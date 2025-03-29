@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -47,12 +48,12 @@ export class UserService {
     async updateUser(user: User): Promise<User> {
         const existingUser = await this.userRepository.findOne({ where: { id: user.id } });
         if (!existingUser) throw new Error('User not found');
-        
+
         existingUser.firstName = user.firstName || existingUser.firstName;
         existingUser.lastName = user.lastName || existingUser.lastName;
         existingUser.email = user.email || existingUser.email;
         existingUser.isActive = user.isActive !== undefined ? user.isActive : existingUser.isActive;
-    
+
         return this.userRepository.save(existingUser);
-      }
+    }
 }
