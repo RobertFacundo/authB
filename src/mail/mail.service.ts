@@ -2,9 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Transporter } from 'nodemailer';
 import * as nodemailer from 'nodemailer';
 import * as jwt from 'jsonwebtoken';
-import * as ejs from 'ejs';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as handlebars from 'handlebars'
 
 @Injectable()
 export class MailService {
@@ -35,23 +33,39 @@ export class MailService {
 
         console.log(verificationToken, 'log de mailservice sve')
 
-        const templatePath = process.env.NODE_ENV === 'production'
-            ? path.join(__dirname, '../mail/verificationEmail.ejs')  // En producción (después de compilar, en dist)
-            : path.join(__dirname, '../src/mail/verificationEmail.ejs');
-        console.log(templatePath);
-        const template = fs.readFileSync(templatePath, 'utf-8')
+        const template = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Email Verification</title>
+        </head>
+        <body>
+            <div style="max-width: 500px; margin: auto; padding: 20px; 
+                        border-radius: 10px; border: 1px solid #444;  box-shadow: 0px 8px 20px rgba(0, 0, 0, 1);
+                        font-family: Arial, sans-serif; text-align: center; background-color: #fff;">
+                <h2 style="color: #333;">Welcome to my Authentication Project! 🎉</h2>
+                <p style="color: #555;">Thank you very much for taking the time to try my authentication project.  
+                                        Click the button below to verify your email address.</p>
+                <a href="${verificationLink}" 
+                    style="display: inline-block; padding: 12px 20px; margin: 20px 0;
+                           background-color: #2A2A2A; color: white; text-decoration: none;
+                           font-weight: bold; border-radius: 5px;">Verify Email</a>
+                <p style="color: #777; font-size: 14px;">If you didn't sign up, please ignore this email.</p>
+            </div>
+        </body>
+        </html>
+    `;
 
-        const htmlContent = ejs.render(template, { verificationLink });
+        const compiledTemplate = handlebars.compile(template);
+        const htmlContent = compiledTemplate({ verificationLink });
 
         const mailOptions = {
             from: process.env.MAIL_USER,
             to: email,
             subject: 'Please verify your email address',
-            text: `Click here to verify your email:${verificationLink}`,
             html: htmlContent,
-            headers: {
-                'Content-Type': 'text/html; charset=UTF-8'
-            }
         };
 
         console.log('Sending email:', email);
