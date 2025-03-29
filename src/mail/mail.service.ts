@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { Transporter } from 'nodemailer';
 import * as nodemailer from 'nodemailer';
 import * as jwt from 'jsonwebtoken';
+import * as ejs from 'ejs';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class MailService {
@@ -28,14 +31,27 @@ export class MailService {
     async sendVerificationEmail(email: string): Promise<void> {
         console.log('Generating verification token for email:', email);
         const verificationToken = this.generateVerificationToken(email);
+        const verificationLink = `${this.appBaseUrl}verify-email/${verificationToken}`
 
         console.log(verificationToken, 'log de mailservice sve')
+
+        const templatePath = process.env.NODE_ENV === 'production'
+            ? path.join(__dirname, '../mail/verificationEmail.ejs')  // En producción (después de compilar, en dist)
+            : path.join(__dirname, '../src/mail/verificationEmail.ejs');
+        console.log(templatePath);
+        const template = fs.readFileSync(templatePath, 'utf-8')
+
+        const htmlContent = ejs.render(template, { verificationLink });
 
         const mailOptions = {
             from: process.env.MAIL_USER,
             to: email,
             subject: 'Please verify your email address',
-            text: `Click here to verify your email: ${this.appBaseUrl}verify-email/${verificationToken}`,
+            text: `Click here to verify your email:${verificationLink}`,
+            html: htmlContent,
+            headers: {
+                'Content-Type': 'text/html; charset=UTF-8'
+            }
         };
 
         console.log('Sending email:', email);
