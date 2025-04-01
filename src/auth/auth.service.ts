@@ -170,12 +170,10 @@ export class AuthService {
 
     async githubLogin(code: string): Promise<string> {
 
-        console.log('GitHub Login service called with code:', code);
         const clientId = this.configService.get<string>('GITHUB_CLIENT_ID');
         const clientSecret = this.configService.get<string>('GITHUB_CLIENT_SECRET');
 
         try {
-            console.log('Attempting to exchange code for access token');
             const tokenResponse = await axios.post(
                 'https://github.com/login/oauth/access_token',
                 {
@@ -186,15 +184,11 @@ export class AuthService {
                 { headers: { Accept: 'application/json' } },
             );
 
-            console.log('GitHub token response:', tokenResponse.data);
-
             const accessToken = tokenResponse.data.access_token;
             if (!accessToken) {
                 console.error('GitHub authentication failed. No access token received.');
                 throw new Error('GitHub authentication Failed')
             };
-
-            console.log('Access token received:', accessToken);
 
             const userResponse = await axios.get('https://api.github.com/user', {
                 headers: { Authorization: `Bearer ${accessToken}` }
@@ -203,8 +197,6 @@ export class AuthService {
             const userEmailResponse = await axios.get('https://api.github.com/user/emails', {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
-
-            console.log('User response from GitHub:', userResponse.data);
 
             interface GitHubEmail {
                 email: string;
@@ -221,20 +213,16 @@ export class AuthService {
                 throw new Error('GitHub user does not have a primary email');
             }
 
-            console.log(`User email: ${userEmail}, checking if user exists in the database`);
             let user = await this.userService.getUserByEmail(userEmail);
 
             if (!user) {
-                console.log('User not found, creating new user');
                 user = await this.userService.createUser(userResponse.data.name, '', userEmail, '', true);
             }
 
             const payload = { sub: user.id, email: user.email };
-            console.log('Generating JWT for the user');
             return this.jwtService.sign(payload, { secret: this.configService.get<string>('JWT_SECRET_KEY') });
 
         } catch (error) {
-            console.error('Error during GitHub login:', error.message);
             throw new Error('GitHub login failed: ' + error.message);
         }
     }
