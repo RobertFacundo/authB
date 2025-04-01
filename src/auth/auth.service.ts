@@ -31,7 +31,7 @@ export class AuthService {
                 return true;
             } else {
                 console.error('reCaptcha verification failed:', response.data);
-                return false; 
+                return false;
             }
         } catch (error) {
             console.error('Error during reCaptcha verification:', error);
@@ -41,7 +41,7 @@ export class AuthService {
 
     async register(firstName: string, lastName: string, email: string, password: string, captchaToken: string): Promise<any> {
         console.log(captchaToken, 'log antes de verificar')
-        
+
         const isCaptchValid = await this.verifyReCaptcha(captchaToken);
         if (!isCaptchValid) {
             throw new Error('reCaptcha verification failed')
@@ -167,7 +167,10 @@ export class AuthService {
         return `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectedUrl}&scope=user:email`;
     }
 
+
     async githubLogin(code: string): Promise<string> {
+
+        console.log('GitHub Login service called with code:', code);
         const clientId = this.configService.get<string>('GITHUB_CLIENT_ID');
         const clientSecret = this.configService.get<string>('GITHUB_CLIENT_SECRET');
 
@@ -183,8 +186,15 @@ export class AuthService {
                 { headers: { Accept: 'application/json' } },
             );
 
+            console.log('GitHub token response:', tokenResponse.data);
+
             const accessToken = tokenResponse.data.access_token;
-            if (!accessToken) throw new Error('GitHub authentication Failed');
+            if (!accessToken) {
+                console.error('GitHub authentication failed. No access token received.');
+                throw new Error('GitHub authentication Failed')
+            };
+
+            console.log('Access token received:', accessToken);
 
             const userResponse = await axios.get('https://api.github.com/user', {
                 headers: { Authorization: `Bearer ${accessToken}` }
@@ -193,6 +203,8 @@ export class AuthService {
             const userEmailResponse = await axios.get('https://api.github.com/user/emails', {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
+
+            console.log('User response from GitHub:', userResponse.data);
 
             interface GitHubEmail {
                 email: string;
@@ -205,6 +217,7 @@ export class AuthService {
             const userEmail = userEmails.find((email) => email.primary)?.email;
 
             if (!userEmail) {
+                console.error('GitHub user does not have a primary email');
                 throw new Error('GitHub user does not have a primary email');
             }
 

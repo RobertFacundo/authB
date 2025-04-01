@@ -74,17 +74,26 @@ export class AuthController {
     @Get('github')
     async gitHubLogin(@Res() res: Response) {
         const url = this.authService.getGitHubUrl();
+        console.log('paso numero 2')
+        console.log(url,'Paso numero 2')
         return res.redirect(url);
     }
 
     @Get('github/callback')
     async gitHubCallback(@Query('code') code: string, @Res() res: Response) {
-        try {
-            const token = await this.authService.githubLogin(code);
-            return res.json({ message: 'Authentication successful', token });
-        } catch (error) {
-            console.error(error);
-            return res.status(400).json({ message: 'Authentication failed', error: error.message });
+        console.log('GitHub Callback Triggered with code:', code);
+        if (!code) {
+            return res.status(400).json({ message: 'Missing code parameter' });
+        }
+    
+        const token = await this.authService.githubLogin(code);
+    
+        console.log(token, 'token recibido de endpoint githhub/callback retornandolo a githubservice=>')
+
+        if (token) {
+            return res.json(token);
+        } else {
+            return res.status(400).json({ message: 'GitHub login failed' });
         }
     }
 }
