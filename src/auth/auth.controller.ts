@@ -74,7 +74,6 @@ export class AuthController {
     @Get('github')
     async gitHubLogin(@Res() res: Response) {
         const url = this.authService.getGitHubUrl();
-        console.log('paso numero 2')
         console.log(url,'Paso numero 2')
         return res.redirect(url);
     }
