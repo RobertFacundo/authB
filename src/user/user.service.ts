@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ConflictException, InternalServerErrorException } from '@nestjs/common';
+// import { ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -13,12 +13,11 @@ export class UserService {
     ) { }
 
     async createUser(firstName: string, lastName: string, email: string, password: string, isOAuth: boolean = false): Promise<User> {
-        const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = this.userRepository.create({
             firstName,
             lastName,
             email,
-            password: hashedPassword,
+            password,
             isOAuth,
         });
         return this.userRepository.save(newUser);

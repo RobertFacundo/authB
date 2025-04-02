@@ -30,9 +30,9 @@ export class AuthController {
     @Post('login')
     @UseGuards(ThrottlerGuard)
     async login(
-        @Body() body: { email: string; password: string, captchaToken: string },
+        @Body() body: { email: string; password: string},
     ) {
-        return this.authService.login(body.email, body.password, body.captchaToken);
+        return this.authService.login(body.email, body.password);
     }
 
     @Get('verification/:token')

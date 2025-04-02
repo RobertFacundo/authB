@@ -66,6 +66,7 @@ export class AuthService {
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
+            console.log(hashedPassword,'contraseña hasheada al register')
 
             const user = await this.userService.createUser(firstName, lastName, email, hashedPassword);
 
@@ -80,15 +81,24 @@ export class AuthService {
         }
     }
 
-    async login(email: string, password: string, captchaToken: string): Promise<any> {
-        const isCaptchaValid = await this.verifyReCaptcha(captchaToken);
-        if (!isCaptchaValid) {
-            throw new Error('reCaptcha verification failed')
+    async login(email: string, password: string,): Promise<any> {
+
+        console.log(email, password, 'log lo que vino')
+        const user = await this.userService.getUserByEmail(email);
+        console.log(user, 'user log')
+
+        if (!user) {
+            throw new Error('invalid credentials');
         }
 
-        const user = await this.userService.getUserByEmail(email);
-        if (!user || !(await bcrypt.compare(password, user.password))) {
-            throw new Error('invalid credentials');
+        const hashedPassword = user.password
+        console.log('contraseña hash db:', hashedPassword)
+        console.log('Contraseña enviada:', password.trim());
+        const isPasswordValid = await bcrypt.compare(password.trim(), hashedPassword);
+        console.log(isPasswordValid)
+
+        if (!isPasswordValid) {
+            throw new Error('Incorrect password')
         }
 
         const secretKey = this.configService.get<string>('JWT_SECRET_KEY');
