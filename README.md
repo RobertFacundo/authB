@@ -89,6 +89,21 @@ If a user forgets their password, a password reset email is sent with a link con
 The system supports authentication via GitHub, using OAuth for secure login. The user is redirected to GitHub’s OAuth page to grant permission, and once authenticated, the user is redirected back to the application with an authentication token.
 
 
+### Tests & Documentation
+
+The backend is documented using Swagger options. You can access the API documentation at the following link:
+
+[Swagger API Documentation](http://authb.onrender.com/api)
+
+To test the endpoints, you can use the following test user credentials:
+
+{
+  "id": 77,
+  "firstName": "swagger",
+  "lastName": "test",
+  "email": "swaggerTest@api.com",
+  "password": "4567896!aA"
+}
 ----
 Created by Robert Facundo
 --
