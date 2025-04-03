@@ -57,8 +57,7 @@ The Auth Module is responsible for handling all user authentication operations. 
 
 - Endpoints:
 
- ```json 
- POST /auth/register ```
+POST /auth/register
 Description: Creates a new user with the provided details (first name, last name, email, and password).
 
 POST /auth/login
