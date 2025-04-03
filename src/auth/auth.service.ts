@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
@@ -40,7 +40,6 @@ export class AuthService {
     }
 
     async register(firstName: string, lastName: string, email: string, password: string, captchaToken: string): Promise<any> {
-        console.log(captchaToken, 'log antes de verificar')
 
         const isCaptchValid = await this.verifyReCaptcha(captchaToken);
         if (!isCaptchValid) {
@@ -66,11 +65,9 @@ export class AuthService {
             }
 
             const hashedPassword = await bcrypt.hash(password, 10);
-            console.log(hashedPassword,'contraseña hasheada al register')
 
             const user = await this.userService.createUser(firstName, lastName, email, hashedPassword);
 
-            console.log('Sending verification email...');
             await this.mailService.sendVerificationEmail(user.email);
 
             return { message: 'User registered successfully. Please check your email for verification.' };
@@ -83,19 +80,14 @@ export class AuthService {
 
     async login(email: string, password: string,): Promise<any> {
 
-        console.log(email, password, 'log lo que vino')
         const user = await this.userService.getUserByEmail(email);
-        console.log(user, 'user log')
 
         if (!user) {
             throw new Error('invalid credentials');
         }
 
         const hashedPassword = user.password
-        console.log('contraseña hash db:', hashedPassword)
-        console.log('Contraseña enviada:', password.trim());
         const isPasswordValid = await bcrypt.compare(password.trim(), hashedPassword);
-        console.log(isPasswordValid)
 
         if (!isPasswordValid) {
             throw new Error('Incorrect password')
@@ -104,7 +96,6 @@ export class AuthService {
         const secretKey = this.configService.get<string>('JWT_SECRET_KEY');
         const payload = { email: user.email, sub: user.id };
 
-        console.log('JWT_SECRET_KEY:', process.env.JWT_SECRET_KEY);
 
         const token = this.jwtService.sign(payload, { secret: secretKey });
 
@@ -137,7 +128,9 @@ export class AuthService {
     }
 
     async forgotPassword(email: string): Promise<any> {
+        console.log(email, 'log forgot password')
         const user = await this.userService.getUserByEmail(email);
+        console.log(user, 'log forgot password')
         if (!user) throw new Error('User not found');
 
         const secretKey = this.configService.get<string>('JWT_SECRET_KEY');
@@ -149,6 +142,7 @@ export class AuthService {
                 expiresIn: '1h'
             }
         );
+        console.log(user.email, 'email de forgot password')
         await this.mailService.sendPasswordResetEmail(user.email, token);
 
         return { message: 'Password reset link has been sent to your email.', token: token }
@@ -164,10 +158,14 @@ export class AuthService {
             throw new Error('User not found');
         }
 
-        foundUser.password = await bcrypt.hash(newPassword, 10);
-        await this.userService.changePassword(foundUser?.id, foundUser?.password);
+        const isSamePassword = await bcrypt.compare(newPassword, foundUser.password)
+        if (isSamePassword) {
+            throw new HttpException('New password must be different from the current password', HttpStatus.BAD_REQUEST);
+        }
 
-        return { message: 'Password has been successfully updated' }
+        await this.userService.changePassword(foundUser?.id, newPassword);
+
+        return { message: 'Password has been successfully updated' };
     }
 
     getGitHubUrl(): string {
