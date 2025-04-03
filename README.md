@@ -105,6 +105,7 @@ To test the endpoints, you can use the following test user credentials:
   "email": "swaggerTest@api.com",
   "password": "4567896!aA"
 }
+```
 ----
 Created by Robert Facundo
 --
