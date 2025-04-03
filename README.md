@@ -57,7 +57,8 @@ The Auth Module is responsible for handling all user authentication operations. 
 
 - Endpoints:
 
-POST /auth/register
+ ```json 
+ POST /auth/register ```
 Description: Creates a new user with the provided details (first name, last name, email, and password).
 
 POST /auth/login
@@ -106,6 +107,7 @@ To test the endpoints, you can use the following test user credentials:
   "password": "4567896!aA"
 }
 ```
+
 ----
 Created by Robert Facundo
 --
