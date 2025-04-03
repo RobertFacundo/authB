@@ -97,13 +97,14 @@ The backend is documented using Swagger options. You can access the API document
 
 To test the endpoints, you can use the following test user credentials:
 
-*{
+```json
+{
   "id": 77,
   "firstName": "swagger",
   "lastName": "test",
   "email": "swaggerTest@api.com",
   "password": "4567896!aA"
-}*
+}
 ----
 Created by Robert Facundo
 --
