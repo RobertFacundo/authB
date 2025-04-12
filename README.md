@@ -2,8 +2,8 @@
 
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-blue)
-[![Swagger](https://img.shields.io/badge/API-Swagger-blue)](http://authb.onrender.com/api)
+![License](https://img.shields.io/badge/license-MIT-orange)
+[![Swagger](https://img.shields.io/badge/API-Swagger-orange)](http://authb.onrender.com/api)
 
 This project consists of a 
 
