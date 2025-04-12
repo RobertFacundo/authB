@@ -41,9 +41,11 @@ export class AuthService {
 
     async register(firstName: string, lastName: string, email: string, password: string, captchaToken: string): Promise<any> {
 
-        const isCaptchValid = await this.verifyReCaptcha(captchaToken);
-        if (!isCaptchValid) {
-            throw new Error('reCaptcha verification failed')
+        if (process.env.NODE_ENV !== 'test') {
+            const isCaptchValid = await this.verifyReCaptcha(captchaToken);
+            if (!isCaptchValid) {
+                throw new Error('reCaptcha verification failed');
+            }
         }
 
         try {

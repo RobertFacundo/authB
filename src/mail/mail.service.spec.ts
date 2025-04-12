@@ -18,7 +18,7 @@ describe('MailService', () => {
     (nodemailer.createTransport as jest.Mock).mockReturnValue({
       sendMail: sendMailMock,
     });
-    (jwt.sign as jest.Mock) = signMock;
+    jest.spyOn(jwt, 'sign').mockImplementation(signMock);
 
     process.env.MAIL_USER = 'test@mail.com';
     process.env.MAIL_PASS = 'password123';
