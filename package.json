@@ -16,7 +16,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:coveralls": "jest --coverage && type .\\coverage\\lcov.info | coveralls",
+    "test:coveralls": "jest --coverage && (if $(uname -s | grep -q 'Linux'); then cat ./coverage/lcov-report/lcov-info; else type ./coverage/lcov-report/lcov-info; fi) | coveralls",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
