@@ -1,5 +1,10 @@
 # Authentication WebSite
 
+![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
+![Build](https://img.shields.io/badge/build-passing-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
+[![Swagger](https://img.shields.io/badge/API-Swagger-blue)](http://authb.onrender.com/api)
+
 This project consists of a 
 
 frontend => (https://github.com/RobertFacundo/authF) 
@@ -106,6 +111,7 @@ To test the endpoints, you can use the following test user credentials:
   "password": "4567896!aA"
 }
 ```
+The entire backend is fully tested using Jest, ensuring high reliability and coverage across all services and features.
 
 ----
 Created by Robert Facundo
