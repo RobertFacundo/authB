@@ -10,7 +10,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Authentication API')
-    .setDescription('Authentication endpoints documentation')
+    .setDescription('Endpoints documentation')
     .setVersion('1.0')
     .addBearerAuth()
     .build()

@@ -15,8 +15,13 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return a string containing the expected HTML structure', () => {
+      const response = appController.getHello();
+
+      expect(typeof response).toBe('string')
+
+      expect(response).toContain('<div');
+      expect(response).toContain('This backend is hosted for FREE on Render');
     });
   });
 });
